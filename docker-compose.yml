@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # app:
+  #   build: .
+  #   ports:
+  #     - '5000:5000'
+  #   environment:
+  #     - DB_HOST=db
+  #     - DB_PORT=5432
+  #     - DB_USERNAME=book_user
+  #     - DB_PASSWORD=book_user_password
+  #     - DB_DATABASE=booksdb
+  #     - PORT=5000
+  #   depends_on:
+  #     - db
+  #   volumes:
+  #     - .:/app
+  #     - /app/node_modules
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: book_user
+      POSTGRES_PASSWORD: book_user_password
+      POSTGRES_DB: booksdb
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
