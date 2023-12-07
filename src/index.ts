@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import validateEnv from '@utils/validateEnv';
 import routes from './routes';
+import errorHandler from './middlewares/errorHandler';
 
 validateEnv();
 
@@ -21,7 +22,8 @@ const ExpressConfig = (): Application => {
   app.use(cookieParser());
   app.use(morgan('dev'));
 
-  app.use(routes);
+  app.use('/api', routes);
+  app.use(errorHandler);
 
   return app;
 };
