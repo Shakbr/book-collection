@@ -1,5 +1,6 @@
 import sequelize from './config/sequelize';
 import '../models/Book';
+import '../models/User';
 
 export const initializeDatabase = async () => {
   try {

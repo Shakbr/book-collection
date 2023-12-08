@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { HttpStatus } from '../utils/httpStatusCodes';
+import { HttpStatus } from '../utils/httpStatusCodesUtils';
 
 export const asyncHandler = <T>(
   fn: (req: Request, res: Response, next: NextFunction) => Promise<T>,

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { ApiError } from '../errors/ApiError';
 import { ValidationError } from 'sequelize';
-import { HttpStatus } from '@/utils/httpStatusCodes';
+import { HttpStatus } from '@/utils/httpStatusCodesUtils';
 
 const errorHandler = (err: Error, req: Request, res: Response, _next: NextFunction) => {
   let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;

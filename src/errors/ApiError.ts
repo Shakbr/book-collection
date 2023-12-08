@@ -1,4 +1,4 @@
-import { HttpStatus } from './../utils/httpStatusCodes';
+import { HttpStatus } from './../utils/httpStatusCodesUtils';
 
 export class ApiError extends Error {
   constructor(
@@ -14,5 +14,13 @@ export class ApiError extends Error {
 
   static notFound(msg: string): ApiError {
     return new ApiError(HttpStatus.NOT_FOUND, msg);
+  }
+
+  static unauthorized(msg: string): ApiError {
+    return new ApiError(HttpStatus.UNAUTHORIZED, msg);
+  }
+
+  static forbidden(msg: string): ApiError {
+    return new ApiError(HttpStatus.FORBIDDEN, msg);
   }
 }

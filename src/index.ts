@@ -6,7 +6,7 @@ import cookieParser from 'cookie-parser';
 import express, { Application } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import validateEnv from '@utils/validateEnv';
+import validateEnv from '@utils/validateEnvUtils';
 import routes from './routes';
 import errorHandler from './middlewares/errorHandler';
 
