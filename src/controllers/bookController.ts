@@ -13,11 +13,28 @@ export class BookController {
 
   findAll = asyncHandler(async (req: AuthRequest, _res: Response, _next: NextFunction) => {
     let query = {};
-    console.log(req.user);
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+
+    const offset = (page - 1) * limit;
     if (!isAdmin(req.user)) {
       query = { userId: req.user.id };
     }
-    return await Book.findAll({ where: query });
+    const { count, rows: books } = await Book.findAndCountAll({
+      where: query,
+      limit,
+      offset,
+      order: [['createdAt', 'ASC']],
+    });
+
+    const totalPages = Math.ceil(count / limit);
+
+    return {
+      books,
+      totalItems: count,
+      totalPages,
+      currentPage: page,
+    };
   });
 
   findOne = asyncHandler(async (req: AuthRequest, _res: Response, _next: NextFunction) => {
