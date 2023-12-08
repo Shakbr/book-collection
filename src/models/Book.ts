@@ -1,5 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../database/config/sequelize';
+import { User } from './User';
 
 export class Book extends Model {
   public id!: number;
@@ -7,12 +8,13 @@ export class Book extends Model {
   public content!: string[];
   public lastReadPage!: number;
   public author!: string;
+  public userId!: number;
 }
 
 Book.init(
   {
     id: {
-      type: DataTypes.INTEGER.UNSIGNED,
+      type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
@@ -51,9 +53,10 @@ Book.init(
     lastReadPage: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      defaultValue: 0,
       validate: {
         min: {
-          args: [1],
+          args: [0],
           msg: 'Last read page must be at least 1',
         },
         isInt: {
@@ -74,9 +77,29 @@ Book.init(
         },
       },
     },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'users',
+        key: 'id',
+      },
+      validate: {
+        min: {
+          args: [1],
+          msg: 'User ID must be at least 1',
+        },
+        isInt: {
+          msg: 'User ID must be an integer',
+        },
+      },
+    },
   },
   {
     tableName: 'books',
     sequelize,
   },
 );
+
+User.hasMany(Book, { foreignKey: 'userId' });
+Book.belongsTo(User, { foreignKey: 'userId' });
