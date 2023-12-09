@@ -1,8 +1,8 @@
 import { Response, NextFunction } from 'express';
-import { Book } from '../models/Book';
-import { findBookOrThrow } from '../helpers/bookHelpers';
-import { asyncHandler } from '../helpers/asyncHandler';
-import { HttpStatus } from '../utils/httpStatusCodesUtils';
+import { Book } from '@/models/Book';
+import { findBookOrThrow } from '@/helpers/bookHelpers';
+import { asyncHandler } from '@/helpers/asyncHandler';
+import { HttpStatus } from '@/utils/httpStatusCodesUtils';
 import { AuthRequest } from '@/types/types';
 import { isAdmin } from '@/utils/authUtils';
 

@@ -21,16 +21,24 @@
     "baseUrl": "src",
     "paths": {
       "@/*": ["*"],
-      "@config/*": ["config/*"],
       "@controllers/*": ["controllers/*"],
-      "@interfaces/*": ["interfaces/*"],
+      "@database/*": ["database/*"],
+      "@errors/*": ["errors/*"],
+      "@helpers/*": ["helpers/*"],
       "@middlewares/*": ["middlewares/*"],
       "@models/*": ["models/*"],
-      "@routers/*": ["routers/*"],
+      "@routes/*": ["routes/*"],
       "@services/*": ["services/*"],
-      "@utils/*": ["utils/*"]
+      "@types/*": ["types/*"],
+      "@utils/*": ["utils/*"],
+      "@testUtils/*": ["testUtils/*"],
+      "@validations/*": ["validations/*"],
     }
   },
   "include": ["src//*.ts", "src//*.json", ".env"],
-  "exclude": ["node_modules", "src/http", "src/logs", "src/tests"]
+  "exclude": ["node_modules", "./coverage", "./dist", "__tests__"],
+  "ts-node": {
+    "transpileOnly": true,
+    "files": true
+  },
 }

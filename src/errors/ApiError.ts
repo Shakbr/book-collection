@@ -23,4 +23,8 @@ export class ApiError extends Error {
   static forbidden(msg: string): ApiError {
     return new ApiError(HttpStatus.FORBIDDEN, msg);
   }
+
+  static conflict(msg: string): ApiError {
+    return new ApiError(HttpStatus.CONFLICT, msg);
+  }
 }
