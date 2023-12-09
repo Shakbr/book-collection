@@ -1,5 +1,5 @@
 import express from 'express';
-import { BookController } from '../controllers/BookController';
+import { BookController } from '@/controllers/bookController';
 import { protect } from '@/middlewares/authMiddleware';
 
 const router = express.Router();

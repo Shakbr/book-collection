@@ -9,3 +9,10 @@ export interface UserDTO {
   email: string;
   role: string;
 }
+
+export interface BookData {
+  title: string;
+  content: string[];
+  lastReadPage: number;
+  author: string;
+}
