@@ -6,7 +6,7 @@
     "version" : "1.0.0"
   },
   "servers" : [ {
-    "url" : "https://virtserver.swaggerhub.com/SHANSHIASHVILISHAKO/book-col/1.0.0",
+    "url" : "https://virtserver.swaggerhub.com/SHANSHIASHVILISHAKO/bookc/1.0.0",
     "description" : "SwaggerHub API Auto Mocking"
   } ],
   "security" : [ {
