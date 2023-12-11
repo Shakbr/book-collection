@@ -1,8 +1,7 @@
-import { Password, User } from '..';
 import bcrypt from 'bcrypt';
-import { userData } from '../../../controllers/userController/__tests__/userController.test';
 import sequelize from '../../../database/config/sequelize';
-
+import { userData } from '../../../testUtils/testData';
+import { Password, User } from '../../../models/User';
 describe('User Model', () => {
   const model = User;
 

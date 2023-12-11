@@ -1,17 +1,9 @@
-import { BookData } from './../../../types/types';
+import { Book } from '../../../models/Book';
+import { bookData, userData } from './../../../testUtils/testData';
 import request from 'supertest';
 import app from '../../../app';
 import sequelize from '../../../database/config/sequelize';
-import { userData } from '../../userController/__tests__/userController.test';
 import requestWithAuth from '../../../testUtils/requestHook';
-import { Book } from '../../../models/Book';
-
-const bookData: BookData = {
-  title: 'Test Book',
-  content: ['Page 1', 'Page 2'],
-  lastReadPage: 1,
-  author: 'Test Author',
-};
 
 let token: string;
 let createUserResponse: request.Response;
@@ -67,6 +59,13 @@ describe('Book Controller', () => {
       expect(response.body).toHaveProperty('id');
       expect(response.body.title).toBe(updatedBookTitle);
     });
+  });
+
+  it('throws an error if lastReadPage is less than 1 or greater than total pages', async () => {
+    const updatedBookData = { ...bookData, lastReadPage: 0 };
+    const response = await requestWithAuth.put(`/books/${createUserResponse.body.id}`, token).send(updatedBookData);
+
+    expect(response.status).toBe(409);
   });
 
   describe('DELETE /books/:id', () => {
