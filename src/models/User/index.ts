@@ -74,7 +74,6 @@ User.init(
     role: {
       type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: Role.REGULAR,
       validate: {
         isIn: {
           args: [[Role.ADMIN, Role.REGULAR]],

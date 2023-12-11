@@ -1,83 +1,149 @@
-import request from 'supertest';
-import app from '../../../app';
-import sequelize from '../../../database/config/sequelize';
+import { ApiError } from './../../../errors/ApiError';
+import { HttpStatus } from '../../../utils/httpStatusCodesUtils';
+import { Request, Response, NextFunction } from 'express';
+import { mock, MockProxy } from 'jest-mock-extended';
+import { UserController } from '..';
+import { Role, User } from '../../../models/User';
+import { authenticateUser } from '../../../services/authService';
+import { userData } from '../../../testUtils/testData';
 
-export const userData = {
-  name: 'Test User',
-  email: 'test@example.com',
-  password: 'password123',
-};
+jest.mock('../../../models/User');
+jest.mock('../../../services/authService');
+
+let req: MockProxy<Request> & Request;
+let res: MockProxy<Response> & Response;
+let next: jest.MockedFunction<NextFunction>;
+let userController: UserController;
+let nextError: Error | null;
+
+const roleTestCases = [
+  { role: Role.REGULAR, description: 'should set the role to regular if not defined' },
+  { role: Role.ADMIN, description: 'should set the role to admin if defined' },
+];
+
+const validationTestCases = [
+  { field: 'name', value: '', description: 'should fail if the name is empty' },
+  { field: 'name', value: 'short', description: 'should fail if the name is too short' },
+  {
+    field: 'name',
+    value: 'this name is way too long to be valid',
+    description: 'should fail if the name is too long',
+  },
+  { field: 'email', value: 'not an email', description: 'should fail if the email is not valid' },
+  { field: 'email', value: '', description: 'should fail if the email is empty' },
+  { field: 'password', value: '', description: 'should fail if the password is empty' },
+  { field: 'password', value: 'short', description: 'should fail if the password is too short' },
+  {
+    field: 'password',
+    value: 'this password is way too long to be valid',
+    description: 'should fail if the password is too long',
+  },
+  { field: 'role', value: 'not a role', description: 'should fail if the role is not valid' },
+];
+
+beforeEach(() => {
+  req = mock<Request>();
+  res = mock<Response>({
+    json: jest.fn(),
+    status: jest.fn().mockReturnThis(),
+  });
+  next = jest.fn().mockImplementation((error) => {
+    nextError = error;
+  });
+  userController = new UserController();
+  nextError = null;
+});
+
 describe('UserController', () => {
-  beforeAll(async () => {
-    await sequelize.sync({ force: true });
+  describe('register', () => {
+    validationTestCases.forEach(({ field, value, description }) => {
+      it(description, async () => {
+        req.body = { ...userData, [field]: value };
+        (User.findOne as jest.Mock).mockResolvedValueOnce(null);
+        (User.create as jest.Mock).mockImplementationOnce(() => {
+          throw new Error(`Validation error: ${field} is not valid`);
+        });
+
+        await userController.register(req, res, next);
+
+        expect(nextError).toBeInstanceOf(Error);
+        expect(nextError!.message).toBe(`Validation error: ${field} is not valid`);
+      });
+    });
+    it('should throw an error if the email is already in use', async () => {
+      req.body = { email: userData.email };
+      (User.findOne as jest.Mock).mockResolvedValueOnce(true);
+
+      await userController.register(req, res, next);
+
+      expect(nextError).toBeDefined();
+      expect(nextError!.message).toEqual('Email already in use');
+    });
+
+    it('should create a new user if the email is not in use', async () => {
+      req.body = { email: userData.email, name: userData.name, password: userData.password };
+      (User.findOne as jest.Mock).mockResolvedValueOnce(null);
+      (User.create as jest.Mock).mockResolvedValueOnce({
+        id: 1,
+        ...req.body,
+        toDTO: () => ({ id: 1, email: userData.email, name: userData.name, role: userData.role }),
+      });
+
+      await userController.register(req, res, next);
+
+      expect(nextError).toBeNull();
+      expect(User.create).toHaveBeenCalledWith(req.body);
+      expect(res.status).toHaveBeenCalledWith(HttpStatus.CREATED);
+      expect(res.json).toHaveBeenCalledWith({ id: 1, email: userData.email, name: userData.name, role: userData.role });
+    });
+
+    roleTestCases.forEach(({ role, description }) => {
+      it(description, async () => {
+        req.body = { email: userData.email, name: userData.name, password: userData.password, role };
+        (User.findOne as jest.Mock).mockResolvedValueOnce(null);
+        (User.create as jest.Mock).mockResolvedValueOnce({
+          id: 1,
+          ...req.body,
+          toDTO: () => ({ id: 1, email: userData.email, name: userData.name, role }),
+        });
+
+        await userController.register(req, res, next);
+
+        expect(nextError).toBeNull();
+        expect(User.create).toHaveBeenCalledWith(req.body);
+        expect(res.status).toHaveBeenCalledWith(HttpStatus.CREATED);
+        expect(res.json).toHaveBeenCalledWith({ id: 1, email: userData.email, name: userData.name, role });
+      });
+    });
   });
-  describe('POST /users/register', () => {
-    it('should register a new user', async () => {
-      const response = await request(app).post('/api/users/register').send(userData);
 
-      expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('id');
-    });
-    it('should return 400 if required fields are missing', async () => {
-      const response = await request(app).post('/api/users/register').send({});
+  describe('login', () => {
+    it('should authenticate the user', async () => {
+      req.body = { email: userData.email, password: userData.password };
+      const userDTO = { id: 1, email: userData.email, name: userData.name, role: Role.REGULAR };
+      const token = 'testToken';
 
-      expect(response.status).toBe(400);
-    });
+      (authenticateUser as jest.Mock).mockResolvedValueOnce({ user: userDTO, token });
 
-    it('should return 400 if email is not valid', async () => {
-      const response = await request(app)
-        .post('/api/users/register')
-        .send({ ...userData, email: 'notvalid' });
+      await userController.login(req, res, next);
 
-      expect(response.status).toBe(400);
+      expect(authenticateUser).toHaveBeenCalledWith(userData.email, userData.password);
+      expect(res.status).toHaveBeenCalledWith(HttpStatus.OK);
+      expect(res.json).toHaveBeenCalledWith({ user: userDTO, token });
     });
 
-    it('should return 409 if password is not strong enough', async () => {
-      const response = await request(app)
-        .post('/api/users/register')
-        .send({ ...userData, password: 'short' });
+    it('should throw an error if authentication fails', async () => {
+      req.body = { email: userData.email, password: userData.password };
 
-      expect(response.status).toBe(409);
-    });
+      (authenticateUser as jest.Mock).mockImplementationOnce(() => {
+        throw ApiError.unauthorized('Invalid email or password');
+      });
 
-    it('should return 409 if email is already in use', async () => {
-      await request(app).post('/api/users/register').send(userData);
-      const response = await request(app).post('/api/users/register').send(userData);
+      await userController.login(req, res, next);
 
-      expect(response.status).toBe(409);
-    });
-  });
-
-  describe('POST /users/login', () => {
-    it('should return 400 if required fields are missing', async () => {
-      const response = await request(app).post('/api/users/login').send({});
-
-      expect(response.status).toBe(400);
-    });
-
-    it('should return 401 if email is not registered', async () => {
-      const response = await request(app)
-        .post('/api/users/login')
-        .send({ email: 'notregistered@test.com', password: 'password' });
-
-      expect(response.status).toBe(401);
-    });
-
-    it('should return 401 if password is incorrect', async () => {
-      const response = await request(app)
-        .post('/api/users/login')
-        .send({ email: userData.email, password: 'wrongpassword' });
-
-      expect(response.status).toBe(401);
-    });
-
-    it('should return 200 and a token if email and password are correct', async () => {
-      const response = await request(app)
-        .post('/api/users/login')
-        .send({ email: userData.email, password: userData.password });
-
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('token');
+      expect(authenticateUser).toHaveBeenCalledWith(userData.email, userData.password);
+      expect(nextError).toBeInstanceOf(ApiError);
+      expect(nextError?.message).toBe('Invalid email or password');
     });
   });
 });

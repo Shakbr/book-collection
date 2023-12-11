@@ -1,7 +1,7 @@
-import { loginValidation, userCreationValidation } from './../validations/userValidation';
-import { validationErrorHandler } from './../middlewares/validationErrorHandler';
+import { loginValidation, userCreationValidation } from '@/validations/userValidation';
+import { validationErrorHandler } from '@/middlewares/validationErrorHandler';
 import express from 'express';
-import { UserController } from '../controllers/userController';
+import { UserController } from '@/controllers/userController';
 
 const router = express.Router();
 const userController = new UserController();

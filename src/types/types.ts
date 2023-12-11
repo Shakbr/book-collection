@@ -3,12 +3,15 @@ export interface AuthRequest extends Request {
   user?: UserDTO;
 }
 
-export interface UserDTO {
-  id: number;
+export interface UserData {
+  id?: number;
   name: string;
   email: string;
-  role: string;
+  password: string;
+  role?: string;
 }
+
+export type UserDTO = Omit<UserData, 'password'>;
 
 export interface BookData {
   title: string;
