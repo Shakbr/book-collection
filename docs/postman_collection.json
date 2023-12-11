@@ -16,7 +16,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "// Register as admin\n{\n \"email\": {{admin_user_email}},\n \"name\": {{admin_user_name}},\n \"password\": {{password}}\n}\n\n// Or you can create regular user account\n// {\n//  \"email\": {{regular_user_email}},\n//  \"name\": {{regular_user_name}},\n//  \"password\": {{password}}\n// }",
+              "raw": "// Register as admin\n{\n \"email\": {{admin_user_email}},\n \"name\": {{admin_user_name}},\n \"role\": {{admin_user_role},\n \"password\": {{password}}\n}\n\n// Or you can create regular user account\n// {\n//  \"email\": {{regular_user_email}},\n//  \"name\": {{regular_user_name}},\n// \"role\": {{regular_user_role}},\n//  \"password\": {{password}}\n// }",
               "options": {
                 "raw": {
                   "language": "json"
