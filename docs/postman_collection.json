@@ -1,0 +1,339 @@
+{
+  "info": {
+    "_postman_id": "5ba4e0af-8736-4555-b165-b3c401592e53",
+    "name": "Book CRUD API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "3587245"
+  },
+  "item": [
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "// Register as admin\n{\n \"email\": {{admin_user_email}},\n \"name\": {{admin_user_name}},\n \"password\": {{password}}\n}\n\n// Or you can create regular user account\n// {\n//  \"email\": {{regular_user_email}},\n//  \"name\": {{regular_user_name}},\n//  \"password\": {{password}}\n// }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:3000/api/users/register",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "users", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "// Login as admin\n{\n \"email\": {{admin_user_email}}, \n \"password\": {{password}}\n}\n\n// Or you can login as regular user\n// {\n//  \"email\": {{regular_user_email}}, \n//  \"password\": {{password}}\n// }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:3000/api/users/login",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "users", "login"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "auth": {
+        "type": "noauth"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [""]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [""]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Book",
+      "item": [
+        {
+          "name": "Create Book",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": {{book_title}},\n  \"content\": {{book_content}},\n  \"lastReadPage\": {{book_lastReadPage}},\n  \"author\": {{book_author}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:3000/api/books",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "books"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Book By Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoxLCJuYW1lIjoiQWRtaW4gVXNlciIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4ifSwiaWF0IjoxNzAyMjI5NTM2LCJleHAiOjE3MDIyMzMxMzZ9.ccwpjmSCI9dbW7JjqKXej6ch3CX86BhPpBSYfo5YuUY ",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:3000/api/books/1",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "books", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Books",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjozLCJuYW1lIjoiQWRtaW4gVXNlciIsImVtYWlsIjoiYWRtaW5fdXNlckBleGFtcGxlLmNvbSIsInJvbGUiOiJyZWd1bGFyIn0sImlhdCI6MTcwMjI3NjE1MSwiZXhwIjoxNzAyMjc5NzUxfQ.kRCBi5qWg96HFXEP25easJPqB9UqucoM8gimHPrRySg",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "localhost:3000/api/books?page=1&limit=3",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "books"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "3"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Book",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Book Title\",\n  \"content\": [\"Updated Page1\", \"Updated Page 2\", \"Newly Added Page 3\"],\n  \"lastReadPage\": 2,\n  \"author\": \"Updated Book Author\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:3000/api/books/12",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "books", "12"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Book",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "localhost:3000/api/books/1",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "books", "1"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "auth": {
+        "type": "jwt",
+        "jwt": [
+          {
+            "key": "secret",
+            "value": "{{jwt_secret}}",
+            "type": "string"
+          },
+          {
+            "key": "payload",
+            "value": "{\n    \"user\": {\n        \"id\": \"1\",\n        \"name\": {{admin_user_name}},\n        \"email\": {{admin_user_email}},\n        \"role\": {{admin_user_role}}\n            \n    }\n}",
+            "type": "string"
+          },
+          {
+            "key": "header",
+            "value": "{}",
+            "type": "string"
+          },
+          {
+            "key": "isSecretBase64Encoded",
+            "value": false,
+            "type": "boolean"
+          },
+          {
+            "key": "headerPrefix",
+            "value": "Bearer",
+            "type": "string"
+          },
+          {
+            "key": "algorithm",
+            "value": "HS256",
+            "type": "string"
+          },
+          {
+            "key": "addTokenTo",
+            "value": "header",
+            "type": "string"
+          },
+          {
+            "key": "queryParamKey",
+            "value": "token",
+            "type": "string"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [""]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [""]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "admin_user_email",
+      "value": "\"admin_user@example.com\"",
+      "type": "string"
+    },
+    {
+      "key": "admin_user_name",
+      "value": "\"Admin User\"",
+      "type": "string"
+    },
+    {
+      "key": "admin_user_role",
+      "value": "\"admin\"",
+      "type": "string"
+    },
+    {
+      "key": "regular_user_email",
+      "value": "\"regular_user@example.com\"",
+      "type": "string"
+    },
+    {
+      "key": "regular_user_name",
+      "value": "\"Regular User\"",
+      "type": "string"
+    },
+    {
+      "key": "regular_user_role",
+      "value": "\"regular\"",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "\"123456789\"",
+      "type": "string"
+    },
+    {
+      "key": "book_title",
+      "value": "\"Test Title\"",
+      "type": "string"
+    },
+    {
+      "key": "book_content",
+      "value": "[\"Page 1\", \"Page 2\"]",
+      "type": "string"
+    },
+    {
+      "key": "book_lastReadPage",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "book_author",
+      "value": "\"Test Author\"",
+      "type": "string"
+    },
+    {
+      "key": "jwt_secret",
+      "value": "your_secret_key",
+      "type": "string"
+    }
+  ]
+}

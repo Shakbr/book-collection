@@ -10,7 +10,7 @@ export const initializeDatabase = async (sync: boolean = false) => {
     await sequelize.sync({ force: sync });
     console.log('Database & tables created!');
   } catch (error) {
-    console.error('Unable to connect to the database:', error);
+    console.error('Unable to connect to the database: Please run "docker-compose up -d"');
     process.exit(1);
   }
 };
