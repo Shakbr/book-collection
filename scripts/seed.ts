@@ -7,14 +7,15 @@ const seedDatabase = async () => {
     await sequelize.authenticate();
 
     // Delete existing records
-    await Book.destroy({ where: {} });
-    await User.destroy({ where: {} });
+    await Book.destroy({ truncate: true, cascade: true, restartIdentity: true });
+    await User.destroy({ truncate: true, cascade: true, restartIdentity: true });
+
     console.log('Existing records deleted.');
 
     // Create an admin user
     const adminUser = await User.create({
       name: 'Admin User',
-      email: 'admin@example.com',
+      email: 'admin_user@example.com',
       password: '123456789',
       role: 'admin',
     });
@@ -22,7 +23,7 @@ const seedDatabase = async () => {
     // Create a regular user
     const regularUser = await User.create({
       name: 'Regular User',
-      email: 'regular@example.com',
+      email: 'regular_user@example.com',
       password: '123456789',
     });
 

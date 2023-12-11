@@ -25,6 +25,6 @@ export class UserController {
       throw ApiError.unauthorized('Invalid credentials');
     }
 
-    return { token: authResult.token };
+    return authResult;
   });
 }
