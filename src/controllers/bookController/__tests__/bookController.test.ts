@@ -4,6 +4,7 @@ import app from '../../../app';
 import sequelize from '../../../database/config/sequelize';
 import { userData } from '../../userController/__tests__/userController.test';
 import requestWithAuth from '../../../testUtils/requestHook';
+import { Book } from '../../../models/Book';
 
 const bookData: BookData = {
   title: 'Test Book',
@@ -13,6 +14,7 @@ const bookData: BookData = {
 };
 
 let token: string;
+let createUserResponse: request.Response;
 describe('Book Controller', () => {
   beforeAll(async () => {
     await sequelize.sync({ force: true });
@@ -24,11 +26,15 @@ describe('Book Controller', () => {
     token = loginResponse.body.token;
   });
 
+  beforeEach(async () => {
+    await Book.destroy({ truncate: true });
+    createUserResponse = await requestWithAuth.post('/books', token, bookData);
+  });
+
   describe('POST /books', () => {
     it('should create a new book', async () => {
-      const response = await requestWithAuth.post('/books', token, bookData);
-      expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('id');
+      expect(createUserResponse.status).toBe(201);
+      expect(createUserResponse.body).toHaveProperty('id');
     });
   });
 
@@ -43,7 +49,7 @@ describe('Book Controller', () => {
 
   describe('GET /books/:id', () => {
     it('should get a book by id', async () => {
-      const response = await requestWithAuth.get('/books/1', token);
+      const response = await requestWithAuth.get(`/books/${createUserResponse.body.id}`, token);
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('id');
@@ -53,7 +59,9 @@ describe('Book Controller', () => {
   describe('PUT /books/:id', () => {
     it('should update a book by id', async () => {
       const updatedBookTitle = 'Updated Book Title';
-      const response = await requestWithAuth.put('/books/1', token).send({ ...bookData, title: updatedBookTitle });
+      const response = await requestWithAuth
+        .put(`/books/${createUserResponse.body.id}`, token)
+        .send({ ...bookData, title: updatedBookTitle });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('id');
@@ -63,7 +71,7 @@ describe('Book Controller', () => {
 
   describe('DELETE /books/:id', () => {
     it('should delete a book by id', async () => {
-      const response = await requestWithAuth.delete('/books/1', token);
+      const response = await requestWithAuth.delete(`/books/${createUserResponse.body.id}`, token);
 
       expect(response.status).toBe(204);
     });

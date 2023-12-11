@@ -1,5 +1,5 @@
 import { DataTypes, Model } from 'sequelize';
-import sequelize from '../database/config/sequelize';
+import sequelize from '@/database/config/sequelize';
 import bcrypt from 'bcrypt';
 import { UserDTO } from '@/types/types';
 
@@ -24,12 +24,6 @@ export class User extends Model {
     return bcrypt.compare(candidatePassword, this.password);
   }
 
-  static validateEmail(email: string): boolean {
-    const re =
-      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(email.toLowerCase());
-  }
-
   toDTO(): UserDTO {
     return {
       id: this.id,
@@ -51,9 +45,6 @@ User.init(
       type: new DataTypes.STRING(128),
       allowNull: false,
       validate: {
-        notEmpty: {
-          msg: 'name must not be empty',
-        },
         len: {
           args: [1, 128],
           msg: 'name must be between 1 and 128 characters long',
@@ -67,11 +58,6 @@ User.init(
       validate: {
         isEmail: true,
         notEmpty: true,
-        isValidEmail(value: string) {
-          if (!User.validateEmail(value)) {
-            throw new Error('Invalid email format');
-          }
-        },
       },
     },
     password: {
@@ -81,7 +67,7 @@ User.init(
         notEmpty: true,
         len: {
           args: [Password.MIN_LENGTH, Password.MAX_LENGTH],
-          msg: `password must be between ${Password.MIN_LENGTH} and ${Password.MAX_LENGTH} characters long`,
+          msg: `Password must be between ${Password.MIN_LENGTH} and ${Password.MAX_LENGTH} characters long`,
         },
       },
     },
@@ -92,7 +78,7 @@ User.init(
       validate: {
         isIn: {
           args: [[Role.ADMIN, Role.REGULAR]],
-          msg: `role must be either ${Role.ADMIN} or ${Role.REGULAR}`,
+          msg: `Role must be either ${Role.ADMIN} or ${Role.REGULAR}`,
         },
       },
     },
