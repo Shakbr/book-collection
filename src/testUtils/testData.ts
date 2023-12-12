@@ -1,5 +1,5 @@
 import { Optional } from 'sequelize';
-import { BookData, UserData } from '../types/types';
+import { BookData, UserDTO, UserData } from '../types/types';
 import { Role } from '../models/User';
 
 interface UserCreationAttributes extends Optional<UserData, 'id'> {}
@@ -9,6 +9,8 @@ export const userData: UserCreationAttributes = {
   password: 'password123',
   role: Role.REGULAR,
 };
+
+export const userDTO: UserDTO = { id: 1, email: userData.email, name: userData.name, role: Role.REGULAR };
 
 export const bookData: BookData = {
   title: 'Test Book',
