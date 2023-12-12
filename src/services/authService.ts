@@ -12,12 +12,8 @@ interface AuthenticateUser {
 export const authenticateUser = async (email: string, password: string): Promise<AuthenticateUser> => {
   const user = await User.findOne({ where: { email } });
 
-  if (!user) {
-    throw ApiError.unauthorized('Email not found');
-  }
-
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) {
+  const isMatch = user && (await bcrypt.compare(password, user.password));
+  if (!user || !isMatch) {
     throw ApiError.unauthorized('Invalid credentials');
   }
 
