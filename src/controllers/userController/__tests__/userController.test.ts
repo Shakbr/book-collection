@@ -5,7 +5,7 @@ import { mock, MockProxy } from 'jest-mock-extended';
 import { UserController } from '..';
 import { Role, User } from '../../../models/User';
 import { authenticateUser } from '../../../services/authService';
-import { userData } from '../../../testUtils/testData';
+import { userDTO, userData } from '../../../testUtils/testData';
 
 jest.mock('../../../models/User');
 jest.mock('../../../services/authService');
@@ -81,12 +81,12 @@ describe('UserController', () => {
     });
 
     it('should create a new user if the email is not in use', async () => {
-      req.body = { email: userData.email, name: userData.name, password: userData.password };
+      req.body = userData;
       (User.findOne as jest.Mock).mockResolvedValueOnce(null);
       (User.create as jest.Mock).mockResolvedValueOnce({
         id: 1,
         ...req.body,
-        toDTO: () => ({ id: 1, email: userData.email, name: userData.name, role: userData.role }),
+        toDTO: () => userDTO,
       });
 
       await userController.register(req, res, next);
@@ -94,7 +94,7 @@ describe('UserController', () => {
       expect(nextError).toBeNull();
       expect(User.create).toHaveBeenCalledWith(req.body);
       expect(res.status).toHaveBeenCalledWith(HttpStatus.CREATED);
-      expect(res.json).toHaveBeenCalledWith({ id: 1, email: userData.email, name: userData.name, role: userData.role });
+      expect(res.json).toHaveBeenCalledWith(userDTO);
     });
 
     roleTestCases.forEach(({ role, description }) => {
@@ -104,7 +104,7 @@ describe('UserController', () => {
         (User.create as jest.Mock).mockResolvedValueOnce({
           id: 1,
           ...req.body,
-          toDTO: () => ({ id: 1, email: userData.email, name: userData.name, role }),
+          toDTO: () => ({ ...userDTO, role }),
         });
 
         await userController.register(req, res, next);
@@ -112,7 +112,7 @@ describe('UserController', () => {
         expect(nextError).toBeNull();
         expect(User.create).toHaveBeenCalledWith(req.body);
         expect(res.status).toHaveBeenCalledWith(HttpStatus.CREATED);
-        expect(res.json).toHaveBeenCalledWith({ id: 1, email: userData.email, name: userData.name, role });
+        expect(res.json).toHaveBeenCalledWith({ ...userDTO, role });
       });
     });
   });
@@ -120,7 +120,7 @@ describe('UserController', () => {
   describe('login', () => {
     it('should authenticate the user', async () => {
       req.body = { email: userData.email, password: userData.password };
-      const userDTO = { id: 1, email: userData.email, name: userData.name, role: Role.REGULAR };
+
       const token = 'testToken';
 
       (authenticateUser as jest.Mock).mockResolvedValueOnce({ user: userDTO, token });
