@@ -1,6 +1,7 @@
-import { DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, ValidationError, ValidationErrorItem } from 'sequelize';
 import sequelize from '@/database/config/sequelize';
 import { User } from '../User';
+import { ApiError } from '@/errors/ApiError';
 
 export class Book extends Model {
   public id!: number;
@@ -37,14 +38,13 @@ Book.init(
       validate: {
         isContentValid(value: string[]) {
           if (!Array.isArray(value)) {
-            throw new Error('Content must be an array');
-          }
-          if (value.length < 1) {
-            throw new Error('Content must have at least 1 page');
+            throw ApiError.badRequest('Content must be an array');
+          } else if (value.length < 1) {
+            throw ApiError.badRequest('Content must have at least 1 page');
           }
           value.forEach((page, index) => {
             if (page.length < 1) {
-              throw new Error(`Page ${index + 1} must not be empty`);
+              throw ApiError.badRequest(`Page ${index + 1} must not be empty`);
             }
           });
         },
@@ -55,10 +55,6 @@ Book.init(
       allowNull: false,
       defaultValue: 0,
       validate: {
-        min: {
-          args: [0],
-          msg: 'Last read page must be at least 1',
-        },
         isInt: {
           msg: 'Last read page must be an integer',
         },
@@ -98,6 +94,38 @@ Book.init(
   {
     tableName: 'books',
     sequelize,
+    hooks: {
+      beforeUpdate: async (book) => {
+        if (book.lastReadPage < 1) {
+          throw new ValidationError('Validation error', [
+            new ValidationErrorItem(
+              'Last read page must be at least 1',
+              'validation error',
+              'lastReadPage',
+              book.lastReadPage.toString(),
+              book,
+              'min',
+              'beforeUpdate',
+              [],
+            ),
+            ,
+          ]);
+        } else if (book.lastReadPage > book.content.length) {
+          throw new ValidationError('Validation error', [
+            new ValidationErrorItem(
+              `Last read page must be at most ${book.content.length}`,
+              'validation error',
+              'lastReadPage',
+              book.lastReadPage.toString(),
+              book,
+              'max',
+              'beforeUpdate',
+              [],
+            ),
+          ]);
+        }
+      },
+    },
   },
 );
 

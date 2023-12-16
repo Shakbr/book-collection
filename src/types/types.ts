@@ -16,6 +16,6 @@ export type UserDTO = Omit<UserData, 'password'>;
 export interface BookData {
   title: string;
   content: string[];
-  lastReadPage: number;
+  lastReadPage?: number;
   author: string;
 }
