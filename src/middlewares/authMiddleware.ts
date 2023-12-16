@@ -8,6 +8,7 @@ export const JWT_SECRET_KEY: Secret = process.env.JWT_SECRET as Secret;
 export const protect = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
+
     if (!token) {
       throw ApiError.badRequest('No token provided');
     }
@@ -19,6 +20,6 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
     req.user = user;
     next();
   } catch (error) {
-    next(ApiError.unauthorized('Not authorized'));
+    next(error instanceof ApiError ? error : ApiError.unauthorized('Not authorized'));
   }
 };

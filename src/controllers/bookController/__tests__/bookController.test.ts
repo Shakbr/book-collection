@@ -9,6 +9,7 @@ import { Book } from '../../../models/Book';
 import { bookData, userDTO } from '../../../testUtils/testData';
 import { isAdmin } from '../../../utils/authUtils';
 import { Role } from '../../../models/User';
+import { ValidationError, ValidationErrorItem } from 'sequelize';
 
 jest.mock('../../../models/Book');
 jest.mock('../../../helpers/bookHelpers');
@@ -51,6 +52,38 @@ describe('BookController', () => {
       expect(res.status).toHaveBeenCalledWith(HttpStatus.CREATED);
       expect(res.json).toHaveBeenCalledWith(bookData);
     });
+
+    const validationTestCases = [
+      {
+        description: 'should throw an error if title is not provided',
+        body: { ...bookData, title: null },
+        errorMessage: 'Title is required',
+      },
+      {
+        description: 'should throw an error if author is not provided',
+        body: { ...bookData, author: null },
+        errorMessage: 'Author is required',
+      },
+      {
+        description: 'should throw an error if content is not provided',
+        body: { ...bookData, content: null },
+        errorMessage: 'Content is required',
+      },
+    ];
+
+    validationTestCases.forEach(({ description, body, errorMessage }) => {
+      it(description, async () => {
+        req.body = body;
+        (Book.create as jest.Mock).mockImplementationOnce(() => {
+          throw ApiError.badRequest(errorMessage);
+        });
+        await bookController.create(req, res, next);
+
+        expect(nextError).toBeDefined();
+        expect(nextError).toBeInstanceOf(ApiError);
+        expect(nextError!.message).toEqual(errorMessage);
+      });
+    });
   });
   describe('findOne', () => {
     it('should find a book', async () => {
@@ -83,7 +116,6 @@ describe('BookController', () => {
               ...Array(2).fill(mock<Book>({ ...bookData, userId: regularUserId })),
               ...Array(2).fill(mock<Book>({ ...bookData, userId: regularUserId + 1 })),
             ];
-        console.log(mockBooks);
         (Book.findAndCountAll as jest.Mock).mockResolvedValueOnce({
           count: mockBooks.length,
           rows: mockBooks,
@@ -129,23 +161,54 @@ describe('BookController', () => {
       expect(res.status).toHaveBeenCalledWith(HttpStatus.OK);
     });
 
-    it('should throw an error if lastReadPage is greater than total page', async () => {
+    describe('validations', () => {
       const contentLength = 5;
-      req.body = { ...req.body, lastReadPage: contentLength + 1 };
-      const mockBook = mock<Book>({
-        ...bookData,
-        content: Array(contentLength).fill('content'),
+      const testCases = [
+        {
+          lastReadPage: 0,
+          errorMessage: 'Last read page must be at least 1',
+          fnName: 'min',
+        },
+        {
+          lastReadPage: contentLength + 1,
+          errorMessage: `Last read page must be at most ${contentLength}`,
+          fnName: 'max',
+        },
+      ];
+      testCases.forEach(({ lastReadPage, errorMessage, fnName }) => {
+        it(`should throw an error if lastReadPage is ${lastReadPage}`, async () => {
+          req.body = { ...req.body, lastReadPage };
+          const mockBook = mock<Book>({
+            ...bookData,
+            content: Array(contentLength).fill('content'),
+            update: jest.fn().mockImplementation(async (values: Partial<Book>) => {
+              Object.assign(mockBook, values);
+              if (mockBook.lastReadPage < 1 || mockBook.lastReadPage > contentLength) {
+                throw new ValidationError(`Validation error: ${errorMessage}`, [
+                  new ValidationErrorItem(
+                    errorMessage,
+                    'validation error',
+                    'lastReadPage',
+                    mockBook.lastReadPage.toString(),
+                    mockBook,
+                    fnName,
+                    'beforeUpdate',
+                    [],
+                  ),
+                ]);
+              }
+            }),
+          });
+          (findBookOrThrow as jest.Mock).mockResolvedValueOnce(mockBook);
+
+          await bookController.update(req, res, next);
+
+          expect(findBookOrThrow).toHaveBeenCalledWith(req.params.id, req.user);
+          expect(nextError).toBeDefined();
+          expect(nextError).toBeInstanceOf(ValidationError);
+          expect(nextError!.message).toEqual(`Validation error: ${errorMessage}`);
+        });
       });
-      (findBookOrThrow as jest.Mock).mockResolvedValueOnce(mockBook);
-
-      await bookController.update(req, res, next);
-
-      expect(findBookOrThrow).toHaveBeenCalledWith(req.params.id, req.user);
-      expect(nextError).toBeDefined();
-      expect(nextError).toBeInstanceOf(ApiError);
-      expect(nextError!.message).toEqual(
-        `Invalid last read page number, must be between 1 and total number of pages ${contentLength}}`,
-      );
     });
   });
 
@@ -163,7 +226,15 @@ describe('BookController', () => {
       expect(res.status).toHaveBeenCalledWith(HttpStatus.NO_CONTENT);
       expect(res.json).toHaveBeenCalledWith({});
     });
-  });
 
-  // Add more tests for other methods of BookController here
+    it('should throw an error if book is not found', async () => {
+      (findBookOrThrow as jest.Mock).mockRejectedValueOnce(ApiError.conflict('Book not found'));
+
+      await bookController.delete(req, res, next);
+      expect(findBookOrThrow).toHaveBeenCalledWith(req.params.id, req.user);
+      expect(nextError).toBeDefined();
+      expect(nextError).toBeInstanceOf(ApiError);
+      expect(nextError!.message).toEqual('Book not found');
+    });
+  });
 });

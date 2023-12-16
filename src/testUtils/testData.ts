@@ -15,6 +15,6 @@ export const userDTO: UserDTO = { id: 1, email: userData.email, name: userData.n
 export const bookData: BookData = {
   title: 'Test Book',
   content: ['Test Content'],
-  lastReadPage: 1,
+  lastReadPage: 0,
   author: 'Test Author',
 };

@@ -5,7 +5,6 @@ import { asyncHandler } from '@/helpers/asyncHandler';
 import { HttpStatus } from '@/utils/httpStatusCodesUtils';
 import { AuthRequest } from '@/types/types';
 import { isAdmin } from '@/utils/authUtils';
-import { ApiError } from '@/errors/ApiError';
 
 export class BookController {
   create = asyncHandler(async (req: AuthRequest, _res: Response, _next: NextFunction) => {
@@ -44,14 +43,6 @@ export class BookController {
 
   update = asyncHandler(async (req: AuthRequest, _res: Response, _next: NextFunction) => {
     const book = await findBookOrThrow(req.params.id, req.user);
-    if ('lastReadPage' in req.body) {
-      const totalPages = book.content.length;
-      if (req.body.lastReadPage < 1 || req.body.lastReadPage > totalPages) {
-        throw ApiError.conflict(
-          `Invalid last read page number, must be between 1 and total number of pages ${totalPages}}`,
-        );
-      }
-    }
     return await book.update(req.body);
   });
 

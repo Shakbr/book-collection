@@ -1,9 +1,10 @@
-import { Book } from '../../../models/Book';
-import { bookData, userData } from './../../../testUtils/testData';
+import { HttpStatus } from './../../../../utils/httpStatusCodesUtils';
+import { Book } from '../../../../models/Book';
+import { bookData, userData } from './../../../../testUtils/testData';
 import request from 'supertest';
-import app from '../../../app';
-import sequelize from '../../../database/config/sequelize';
-import requestWithAuth from '../../../testUtils/requestHook';
+import app from '../../../../app';
+import sequelize from '../../../../database/config/sequelize';
+import requestWithAuth from '../../../../testUtils/requestHook';
 
 let token: string;
 let createUserResponse: request.Response;
@@ -25,7 +26,7 @@ describe('Book Controller', () => {
 
   describe('POST /books', () => {
     it('should create a new book', async () => {
-      expect(createUserResponse.status).toBe(201);
+      expect(createUserResponse.status).toBe(HttpStatus.CREATED);
       expect(createUserResponse.body).toHaveProperty('id');
     });
   });
@@ -33,7 +34,7 @@ describe('Book Controller', () => {
   describe('GET /books', () => {
     it('should get all books', async () => {
       const response = await requestWithAuth.get('/books', token);
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(HttpStatus.OK);
       expect(response.body).toBeInstanceOf(Object);
       expect(Array.isArray(response.body.books)).toBe(true);
     });
@@ -43,7 +44,7 @@ describe('Book Controller', () => {
     it('should get a book by id', async () => {
       const response = await requestWithAuth.get(`/books/${createUserResponse.body.id}`, token);
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(HttpStatus.OK);
       expect(response.body).toHaveProperty('id');
     });
   });
@@ -53,9 +54,9 @@ describe('Book Controller', () => {
       const updatedBookTitle = 'Updated Book Title';
       const response = await requestWithAuth
         .put(`/books/${createUserResponse.body.id}`, token)
-        .send({ ...bookData, title: updatedBookTitle });
+        .send({ ...bookData, title: updatedBookTitle, lastReadPage: 1 });
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(HttpStatus.OK);
       expect(response.body).toHaveProperty('id');
       expect(response.body.title).toBe(updatedBookTitle);
     });
@@ -65,14 +66,14 @@ describe('Book Controller', () => {
     const updatedBookData = { ...bookData, lastReadPage: 0 };
     const response = await requestWithAuth.put(`/books/${createUserResponse.body.id}`, token).send(updatedBookData);
 
-    expect(response.status).toBe(409);
+    expect(response.status).toBe(HttpStatus.BAD_REQUEST);
   });
 
   describe('DELETE /books/:id', () => {
     it('should delete a book by id', async () => {
       const response = await requestWithAuth.delete(`/books/${createUserResponse.body.id}`, token);
 
-      expect(response.status).toBe(204);
+      expect(response.status).toBe(HttpStatus.NO_CONTENT);
     });
   });
 });
