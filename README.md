@@ -17,7 +17,7 @@ The Book Collection API is a Node.js and Express-based application designed to m
 4. Configure environment variables: Copy `.env.example` to `.env` and fill in your details.
    - Example `.env`:
      ```
-     ENV=development
+     NODE_ENV=development
      PORT=3000
      DB_TYPE=postgres
      DB_HOST=localhost
